@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE PKG_LTE_CORE AS 
+CREATE OR REPLACE PACKAGE G_LTE_CORE AS 
 
   /**
   * Author: Carrasco Marcelo
@@ -64,18 +64,18 @@ CREATE OR REPLACE PACKAGE PKG_LTE_CORE AS
   FUNCTION F_LTE_CORE_TPS_DAY (P_FINI VARCHAR2,P_FFIN VARCHAR2 DEFAULT NULL) RETURN FLNS_TAB PIPELINED;
   
   PROCEDURE P_TPS2 (P_FINI VARCHAR2,P_FFIN VARCHAR2 DEFAULT NULL,RESULT_SET OUT SYS_REFCURSOR);
-END PKG_LTE_CORE;
+END G_LTE_CORE;
 /
 
 
-CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
+CREATE OR REPLACE PACKAGE BODY G_LTE_CORE AS
 
   /**
   * Procedimientos para importar datos desde OSSRC
   */
   PROCEDURE P_IMP_LTE_MOBILITY_MANAGEMENT(P_SOURCE IN VARCHAR2, P_TARGET  IN VARCHAR2) IS
 
-  sql_stmt VARCHAR2(4000);
+  sql_stmt VARCHAR2(32767);
   TYPE cur_typ IS REF CURSOR;
   cur CUR_TYP;
   -- LOG --
@@ -89,14 +89,105 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
   t_array_col t_array_tab;
 
   BEGIN
-    sql_stmt := 'SELECT T1.*
-                 FROM ' || p_source || ' T1
-                 LEFT OUTER JOIN ' || p_target || ' T3
-                   ON T1.FINS_ID = T3.FINS_ID
-                   AND T1.PERIOD_START_TIME = T3.PERIOD_START_TIME
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.MCC_ID,
+                        T1.MNC_ID,
+                        T1.TA_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.EPS_ATTACH_SUCC,
+                        T1.EPS_ATTACH_FAIL,
+                        T1.EPS_DETACH,
+                        T1.EPS_PERIODIC_TAU_SUCC,
+                        T1.EPS_PERIODIC_TAU_FAIL,
+                        T1.EPS_TAU_SUCC,
+                        T1.EPS_TAU_FAIL,
+                        T1.EPS_SERVICE_REQUEST_SUCC,
+                        T1.EPS_SERVICE_REQUEST_FAIL,
+                        T1.EPS_PATH_SWITCH_X2_SUCC,
+                        T1.EPS_PATH_SWITCH_X2_FAIL,
+                        T1.EPS_PAGING_ATTEMPTS,
+                        T1.EPS_PAGING_SUCC,
+                        T1.EPS_PAGING_FAIL,
+                        T1.EPS_TO_3G_GN_ISHO_SUCC,
+                        T1.EPS_TO_3G_GN_ISHO_TRGT_REJE,
+                        T1.EPS_TO_3G_GN_ISHO_PREP_FAIL,
+                        T1.EPS_TO_3G_GN_ISHO_ENB_CNCL,
+                        T1.EPS_TO_3G_GN_ISHO_FAIL,
+                        T1.EPS_S1HO_SUCC,
+                        T1.EPS_S1HO_FAIL,
+                        T1.EPS_S1HO_DUE_TO_MME_FAIL,
+                        T1.EPS_S1HO_ENB_ERROR_FAIL,
+                        T1.EPS_S1HO_SGW_ERROR_FAIL,
+                        T1.EPS_S1HO_COLLISION_FAIL,
+                        T1.EPS_S1HO_UNSPECIFIED_RE_FAIL,
+                        T1.EPS_S1HO_UNKNOWN_TARGET_FAIL,
+                        T1.EPS_S1HO_IN_TARGET_SYST_FAIL,
+                        T1.EPS_S1HO_HO_CANCELLED_FAIL,
+                        T1.EPS_S1HO_INTERACTION_WI_FAIL,
+                        T1.EPS_S1HO_TARGET_ALLOW_FAIL,
+                        T1.EPS_S1HO_CELL_NOT_AVAIL_FAIL,
+                        T1.EPS_S1HO_NO_RADIO_RESOU_FAIL,
+                        T1.EPS_S1HO_ALG_NOT_SUPP_FAIL,
+                        T1.EPS_S1HO_UNSPEC_CAUSE_FAIL,
+                        T1.EPS_CMB_INTRA_TAU_SUCC,
+                        T1.EPS_CMB_INTRA_TAU_FAIL,
+                        T1.EPS_CMB_INTRA_TAU_IMSI_ATT_SUC,
+                        T1.EPS_CMB_INTRA_TAU_IMSI_ATT_FAI,
+                        T1.EPS_CMB_INTER_TAU_SUCC,
+                        T1.EPS_CMB_INTER_TAU_FAIL,
+                        T1.EPS_INTER_TAU_OG_SUCC,
+                        T1.EPS_INTER_TAU_OG_FAIL,
+                        T1.INTRATAU_WO_SGW_CHANGE_SUCC,
+                        T1.INTRATAU_WO_SGW_CHANGE_FAIL,
+                        T1.EPS_COMBINED_ATTACH_SUCC,
+                        T1.EPS_CMBND_ATTACH_EPS_SUCC,
+                        T1.EPS_CMBND_ATTACH_EPS_FAIL,
+                        T1.EPS_CMBND_ATTACH_FAIL,
+                        T1.ESR_MO_ATTEMPTS,
+                        T1.ESR_MT_ATTEMPTS,
+                        T1.ESR_MO_EMERGENCY_ATTEMPTS,
+                        T1.EPS_ATTACH_SUCC_UE_APN,
+                        T1.EPS_ATTACH_SUCC_UE_APN_OVERRDN,
+                        T1.EPS_ATTACH_FAIL_ESM_INFO_REQ,
+                        T1.INTRAMME_S1HO_SGW_CHG_FAIL,
+                        T1.INTRAMME_S1HO_SGW_CHG_SUCC,
+                        T1.EPS_X2HO_SGW_CHG_SUCC,
+                        T1.INTRAMME_TAU_SGW_CHG_SUCC,
+                        T1.MME_OFFLOAD_SUCCESSFUL,
+                        T1.MME_OFFLOAD_SUCCESS_ABNORMAL,
+                        T1.MME_OFFLOAD_FAILED,
+                        T1.MME_OFFLOAD_FAILED_ENB_ERROR,
+                        T1.MME_OFFLOAD_FAILED_COLLISIONS,
+                        T1.INTERMME_TAU_WO_SGW_CHG_SUCC,
+                        T1.INTERMME_TAU_OUT_SUCC,
+                        T1.INTERMME_S1HO_WO_SGW_CHG_SUCC,
+                        T1.INTERMME_S1HO_OUT_SUCC,
+                        T1.INTERMME_TAU_IN_FAIL,
+                        T1.INTERMME_TAU_OUT_FAIL,
+                        T1.INTERMME_S1HO_IN_FAIL,
+                        T1.INTERMME_S1HO_OUT_FAIL,
+                        T1.ATTACH_IN_WITH_MME_CHG_SUCC,
+                        T1.ATTACH_IN_WITH_MME_CHG_FAIL,
+                        T1.EPS_ATTACH_DUE_TO_MME_FAIL,
+                        T1.EPS_TAU_DUE_TO_MME_FAIL,
+                        T1.EPS_SERVICE_REQUEST_MME_FAIL,
+                        T1.EPS_ATTACH_NAS_03_FAIL,
+                        T1.EPS_ATTACH_NAS_06_FAIL,
+                        T1.EPS_ATTACH_NAS_07_FAIL,
+                        T1.EPS_ATTACH_NAS_08_FAIL,
+                        T1.EPS_TAU_NAS_03_FAIL,
+                        T1.EPS_TAU_NAS_06_FAIL,
+                        T1.EPS_TAU_NAS_07_FAIL,
+                        T1.EPS_TAU_NAS_08_FAIL,
+                        T1.EPS_PAGING_1ST_ATTEMPT_SUCC
+                FROM ' || p_source || ' T1
+                LEFT OUTER JOIN ' || p_target || ' T3
+                  ON T1.FINS_ID = T3.FINS_ID
+                  AND T1.PERIOD_START_TIME = T3.PERIOD_START_TIME
                 WHERE T1.PERIOD_START_TIME BETWEEN (SYSDATE - 14) AND SYSDATE
                 AND T3.FINS_ID IS NULL
-                AND T3.PERIOD_START_TIME IS NULL' ;
+                AND T3.PERIOD_START_TIME IS NULL'; --
   
     OPEN cur FOR sql_stmt;
     LOOP
@@ -132,7 +223,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
   EXCEPTION
     when OTHERS then
       --DBMS_OUTPUT.PUT_LINE(SQLERRM);
-      PKG_ERROR_LOG_NEW.P_LOG_ERROR('P_IMP_LTE_MOBILITY_MANAGEMENT',SQLCODE,SQLERRM,'P_SOURCE -> '||P_SOURCE||' P_TARGET -> '||P_TARGET);
+      PKG_ERROR_LOG_NEW.P_LOG_ERROR('P_IMP_LTE_MOBILITY_MANAGEMENT',SQLCODE,SQLERRM,DBMS_UTILITY.format_error_backtrace ); --'P_SOURCE -> '||P_SOURCE||' P_TARGET -> '||P_TARGET);
+  
   END P_IMP_LTE_MOBILITY_MANAGEMENT;
 
   procedure P_IMP_LTE_SESSION_MANAGEMENT(P_SOURCE in varchar2,P_TARGET   in varchar2) is
@@ -152,14 +244,67 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_SMMT_TA_RAW%ROWTYPE;
     T_ARRAY_COL T_ARRAY_TAB;
   BEGIN
-    sql_stmt := 'SELECT T1.*
-     FROM ' || p_source || ' T1
-     LEFT OUTER JOIN ' || p_target || ' T3
-       ON T1.FINS_ID = T3.FINS_ID
-       AND T1.PERIOD_START_TIME = T3.PERIOD_START_TIME
-     WHERE T1.PERIOD_START_TIME BETWEEN (SYSDATE - 14) AND SYSDATE
-      AND T3.FINS_ID IS NULL
-      AND T3.PERIOD_START_TIME IS NULL' ;
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.MCC_ID,
+                        T1.MNC_ID,
+                        T1.TA_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.EPS_DEF_BEARER_ACT_SUCC,
+                        T1.EPS_DEF_BEARER_ACT_FAIL,
+                        T1.EPS_DEF_BEARER_DEACT,
+                        T1.GW_INIT_BEARER_MOD_SUCCESS,
+                        T1.GW_INIT_BEARER_MOD_FAILURE,
+                        T1.GW_INIT_BEARER_MOD_FAIL_UE,
+                        T1.GW_INIT_BEARER_MOD_FAIL_ENB,
+                        T1.GW_INIT_BEARER_MOD_FAIL_SGW,
+                        T1.GW_INIT_BEARER_MOD_FAIL_MME,
+                        T1.HSS_INIT_BEARER_MOD_SUCCESS,
+                        T1.HSS_INIT_BEARER_MOD_FAILURE,
+                        T1.HSS_INIT_BEARER_MOD_FAIL_UE,
+                        T1.HSS_INIT_BEARER_MOD_FAIL_ENB,
+                        T1.HSS_INIT_BEARER_MOD_FAIL_SGW,
+                        T1.PDN_CONNECTIVITY_SUCCESSFUL,
+                        T1.PDN_CONNECTIVITY_FAILED,
+                        T1.PDN_CONNECTIVITY_FAILED_MME,
+                        T1.PDN_CONNECTIVITY_FAILED_SGW,
+                        T1.PDN_CONNECTIVITY_FAILED_UE,
+                        T1.PDN_CONNECTIVITY_FAILED_ENB,
+                        T1.PDN_CONNECT_FAILED_COLLISION,
+                        T1.PDN_CONNECT_FAILED_UNSPECIFIED,
+                        T1.DDBEARER_HSSINIT_MOD_SUCC,
+                        T1.DDBEARER_HSSINIT_MOD_FAIL,
+                        T1.DDBEARER_PGWINIT_ACT_SUCC,
+                        T1.DDBEARER_PGWINIT_ACT_FAIL,
+                        T1.DDBEARER_PGWINIT_MOD_SUCC,
+                        T1.DDBEARER_PGWINIT_MOD_FAIL,
+                        T1.DDBEARER_PGWINIT_DEACT_SUCC,
+                        T1.DDBEARER_MMEINIT_DEACT_SUCC,
+                        T1.DDBEARER_MMEINIT_DEACT_ABNORM,
+                        T1.DDBEARER_UEINIT_ACT_SUCC,
+                        T1.DDBEARER_UEINIT_ACT_FAIL,
+                        T1.DDBEARER_UEINIT_MOD_SUCC,
+                        T1.DDBEARER_UEINIT_MOD_FAIL,
+                        T1.DDBEARER_UEINIT_DEACT_SUCC,
+                        T1.DDBEARER_UEINIT_DEACT_FAIL,
+                        T1.EPS_DEF_BEARER_ACT_MME_FAIL,
+                        T1.EPS_DDBEARER_REQ_BY_MME,
+                        T1.EPS_DDBEARE_CONF_BY_UE,
+                        T1.EPS_DFBEARER_S5_S8_REQ_BY_MME,
+                        T1.EPS_DFBEARER_S5_S8_CONF_BY_SGW,
+                        T1.EPS_DDBEARER_S5_S8_REQ_BY_MME,
+                        T1.EPS_DDBEARER_S5_S8_CONF_BY_SGW,
+                        T1.EMCALL_PDN_CONN_SUCC,
+                        T1.EMCALL_PDN_CONN_FAIL,
+                        T1.EMCALL_DED_BEARER_ACT_SUCC,
+                        T1.EMCALL_DED_BEARER_ACT_FAIL
+                FROM ' || p_source || ' T1
+                LEFT OUTER JOIN ' || p_target || ' T3
+                    ON T1.FINS_ID = T3.FINS_ID
+                    AND T1.PERIOD_START_TIME = T3.PERIOD_START_TIME
+                WHERE T1.PERIOD_START_TIME BETWEEN (SYSDATE - 14) AND SYSDATE
+                AND T3.FINS_ID IS NULL
+                AND T3.PERIOD_START_TIME IS NULL';
 
     OPEN cur FOR sql_stmt;
     LOOP
@@ -214,7 +359,25 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_MULM_MMDU_RAW%ROWTYPE;
     t_array_col t_array_tab;
   BEGIN
-    sql_stmt := 'SELECT T1.*
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.MMDU_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.EPS_MMDU_EMM_REG_MIN,
+                        T1.EPS_MMDU_EMM_REG_MAX,
+                        T1.EPS_MMDU_EMM_REG_SUM,
+                        T1.EPS_MMDU_EMM_REG_DENOM,
+                        T1.EPS_MMDU_EMM_DEREG_MIN,
+                        T1.EPS_MMDU_EMM_DEREG_MAX,
+                        T1.EPS_MMDU_EMM_DEREG_SUM,
+                        T1.MMDU_EMM_DEREG_DENOM,
+                        T1.EPS_BEARER_ACTIVE_NBR_MAX,
+                        T1.EPS_BEARER_DEDICATED_NBR_MAX,
+                        T1.EPS_BEARER_DEDICATED_NBR_SUM,
+                        T1.EPS_BEARER_DEDICATED_NBR_DEN,
+                        T1.EPS_BEARER_DEFAULT_NBR_MAX,
+                        T1.EPS_BEARER_DEFAULT_NBR_SUM,
+                        T1.EPS_BEARER_DEFAULT_NBR_DEN
                 FROM ' || p_source || ' T1
                 LEFT OUTER JOIN ' || p_target || ' T3
                    ON T1.FINS_ID = T3.FINS_ID
@@ -245,14 +408,6 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
                                               'FINS_ID'||'->'||TO_CHAR(T_ARRAY_COL(L_IDX).FINS_ID)||' '||
                                               'PERIOD_START_TIME'||'->'||T_ARRAY_COL(L_IDX).PERIOD_START_TIME||' '||
                                               'MCC_ID ->'||T_ARRAY_COL(L_IDX).MMDU_ID);
-
-                /*INSERT INTO ERROR_LOG(ID, IMPORT_DATE, SOURCE, TARGET,FINS_ID, PERIOD_START_TIME,
-                 MMDU_ID, ERROR_NRO, ERROR_MESG)
-                VALUES
-                (seq_error_log.NEXTVAL,sysdate,p_source1_table,p_target_table,
-                 t_array_col(l_idx).FINS_ID,t_array_col(l_idx).PERIOD_START_TIME,t_array_col(l_idx).MMDU_ID,
-                 l_errno,l_msg);*/
-
             end loop;
         -- end --
       END;
@@ -263,7 +418,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     EXCEPTION
       WHEN OTHERS THEN
         --DBMS_OUTPUT.PUT_LINE(SQLERRM);
-        PKG_ERROR_LOG_NEW.P_LOG_ERROR('P_IMP_LTE_MOBILITY_MANAGEMENT',SQLCODE,SQLERRM,'P_SOURCE -> '||P_SOURCE||' P_TARGET -> '||P_TARGET);
+        PKG_ERROR_LOG_NEW.P_LOG_ERROR('P_IMP_LTE_MMDU_USER_LEVEL',SQLCODE,SQLERRM,'P_SOURCE -> '||P_SOURCE||' P_TARGET -> '||P_TARGET);
   END P_IMP_LTE_MMDU_USER_LEVEL;
   
   PROCEDURE P_IMP_LTE_USER_MME_LEVEL(p_source IN VARCHAR2,P_target IN VARCHAR2) IS
@@ -280,14 +435,52 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_UMLM_FLEXINS_RAW%ROWTYPE;
     t_array_col t_array_tab;
   BEGIN
-    sql_stmt := 'SELECT T1.*
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.EPS_ECM_CONN_MIN,
+                        T1.EPS_ECM_CONN_MAX,
+                        T1.EPS_ECM_IDLE_MIN,
+                        T1.EPS_ECM_IDLE_MAX,
+                        T1.EPS_EMM_REG_MIN,
+                        T1.EPS_EMM_REG_MAX,
+                        T1.EPS_EMM_DEREG_MIN,
+                        T1.EPS_EMM_DEREG_MAX,
+                        T1.EPS_ECM_CONN_SUM,
+                        T1.EPS_ECM_CONN_DENOM,
+                        T1.EPS_ECM_IDLE_SUM,
+                        T1.EPS_ECM_IDLE_DENOM,
+                        T1.PROVIDE_SUBS_LOCATION_SUCC,
+                        T1.PROVIDE_SUBS_LOCATION_ABN_SUCC,
+                        T1.PROVIDE_SUBS_LOCATION_ABN_FAIL,
+                        T1.LOCATION_SERVICE_REQ_SUCC,
+                        T1.LOCATION_SERVICE_REQ_FAIL,
+                        T1.SRVCC_PS_AND_CS_HANDOVER_SUCC,
+                        T1.SRVCC_CS_HANDOVER_SUCC,
+                        T1.OVERLOAD_CONTROL_DROP_PROC,
+                        T1.SRVCC_PS_AND_CS_HO_3G_FAIL,
+                        T1.SRVCC_CS_HO_3G_FAIL,
+                        T1.SRVCC_CS_HO_2G_SUCC,
+                        T1.SRVCC_CS_HO_2G_FAIL,
+                        T1.SRVCC_EME_HO_3G_SUCC,
+                        T1.SRVCC_EME_HO_3G_FAIL,
+                        T1.SRVCC_EME_HO_2G_SUCC,
+                        T1.SRVCC_EME_HO_2G_FAIL,
+                        T1.SRVCC_3G_CANCELLED,
+                        T1.SRVCC_2G_CANCELLED,
+                        T1.SRVCC_EME_3G_CANCELLED,
+                        T1.SRVCC_EME_2G_CANCELLED,
+                        T1.EPS_LICENSE_REG_FAIL,
+                        T1.EPS_LICENSE_BEARER_FAIL,
+                        T1.EPS_PURGE_HSS_OK_SUCC,
+                        T1.EPS_PURGE_HSS_NOK_SUCC
                 FROM ' || p_source || ' T1
                 LEFT OUTER JOIN ' || p_target || ' T3
                     ON T1.FINS_ID = T3.FINS_ID
                     AND T1.PERIOD_START_TIME = T3.PERIOD_START_TIME
                 WHERE T1.PERIOD_START_TIME BETWEEN (SYSDATE - 14) AND SYSDATE
                 AND T3.FINS_ID IS NULL
-                AND T3.PERIOD_START_TIME IS NULL' ;
+                AND T3.PERIOD_START_TIME IS NULL' ; --
     OPEN cur FOR sql_stmt;
     LOOP
       FETCH cur BULK COLLECT INTO t_array_col LIMIT p_limit_in;
@@ -309,14 +502,6 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
                                               L_MSG,
                                               'FINS_ID'||'->'||TO_CHAR(T_ARRAY_COL(L_IDX).FINS_ID)||' '||
                                               'PERIOD_START_TIME'||'->'||T_ARRAY_COL(L_IDX).PERIOD_START_TIME);
-          
-                /*INSERT INTO ERROR_LOG(ID, IMPORT_DATE, SOURCE, TARGET,FINS_ID, PERIOD_START_TIME,
-                 ERROR_NRO, ERROR_MESG)
-                VALUES
-                (seq_error_log.NEXTVAL,sysdate,p_source1_table,p_target_table,
-                 t_array_col(l_idx).FINS_ID,t_array_col(l_idx).PERIOD_START_TIME,
-                 l_errno,l_msg);*/
-          
             end loop;
         -- end --
       END;
@@ -344,7 +529,15 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_SGSM_FLEXINS_RAW%ROWTYPE;
     t_array_col t_array_tab;
   BEGIN
-    sql_stmt := 'SELECT T1.*
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.SGSAP_UPLINK_SUCC,
+                        T1.SGSAP_UPLINK_FAIL,
+                        T1.SGSAP_DOWNLINK_SUCC,
+                        T1.SGSAP_DOWNLINK_FAIL,
+                        T1.CSFB_PAGING_ATTEMPT,
+                        T1.CSFB_PAGING_FAIL
                  FROM ' || p_source || ' T1
                  LEFT OUTER JOIN ' || p_target || ' T3
                    ON T1.FINS_ID = T3.FINS_ID
@@ -372,14 +565,14 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
                                             L_ERRNO,
                                             L_MSG,
                                             'FINS_ID'||'->'||TO_CHAR(T_ARRAY_COL(L_IDX).FINS_ID)||' '||
-                                            'PERIOD_START_TIME'||'->'||T_ARRAY_COL(L_IDX).PERIOD_START_TIME);
-
-              /*INSERT INTO ERROR_LOG(ID, IMPORT_DATE, SOURCE, TARGET,FINS_ID, PERIOD_START_TIME,
-               ERROR_NRO, ERROR_MESG)
-              VALUES
-              (seq_error_log.NEXTVAL,sysdate,p_source1_table,p_target_table,
-               t_array_col(l_idx).FINS_ID,t_array_col(l_idx).PERIOD_START_TIME,
-               l_errno,l_msg);*/
+                                            'PERIOD_START_TIME'||'->'||T_ARRAY_COL(L_IDX).PERIOD_START_TIME||' '||
+                                            'PERIOD_DURATION -> '||TO_CHAR(T_ARRAY_COL(L_IDX).PERIOD_DURATION)||' '||
+                                            'SGSAP_UPLINK_SUCC -> '||TO_CHAR(T_ARRAY_COL(L_IDX).SGSAP_UPLINK_SUCC)||' '||
+                                            'SGSAP_UPLINK_FAIL -> '||TO_CHAR(T_ARRAY_COL(L_IDX).SGSAP_UPLINK_FAIL)||' '||
+                                            'SGSAP_DOWNLINK_SUCC -> '||TO_CHAR(T_ARRAY_COL(L_IDX).SGSAP_DOWNLINK_SUCC)||' '||
+                                            'SGSAP_DOWNLINK_FAIL -> '||TO_CHAR(T_ARRAY_COL(L_IDX).SGSAP_DOWNLINK_FAIL)||' '||
+                                            'CSFB_PAGING_ATTEMPT -> '||TO_CHAR(T_ARRAY_COL(L_IDX).CSFB_PAGING_ATTEMPT)||' '||
+                                            'CSFB_PAGING_FAIL -> '||TO_CHAR(T_ARRAY_COL(L_IDX).CSFB_PAGING_FAIL));
           end loop;
       -- end --
     END;
@@ -407,7 +600,15 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_ULOAD_UNIT1_RAW%ROWTYPE;
     t_array_col t_array_tab;
   BEGIN
-    sql_stmt := 'SELECT T1.*
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.UNIT_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.COMP_AVERAGE_LOAD,
+                        T1.COMP_PEAK_LOAD_PERCENT,
+                        T1.COMP_PEAK_LOAD_DATE,
+                        T1.COMP_PEAK_LOAD_TIME,
+                        T1.COMP_INVALID_RECORD
                 FROM ' || p_source || ' T1
                 LEFT OUTER JOIN ' || p_target || ' T3
                    ON T1.FINS_ID = T3.FINS_ID
@@ -436,15 +637,13 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
                                             L_MSG,
                                             'FINS_ID -> '||TO_CHAR(T_ARRAY_COL(L_IDX).FINS_ID)||' '||
                                             'PERIOD_START_TIME -> '||T_ARRAY_COL(L_IDX).PERIOD_START_TIME||' '||
-                                            'UNIT_ID -> '||t_array_col(l_idx).UNIT_ID);
-
-            /*INSERT INTO ERROR_LOG(ID, IMPORT_DATE, SOURCE, TARGET,FINS_ID, PERIOD_START_TIME,
-              UNIT_ID,ERROR_NRO,ERROR_MESG)
-            VALUES
-            (seq_error_log.NEXTVAL,sysdate,p_source1_table,p_target_table,
-             t_array_col(l_idx).FINS_ID,t_array_col(l_idx).PERIOD_START_TIME,
-              t_array_col(l_idx).UNIT_ID,l_errno,l_msg);*/
-
+                                            'UNIT_ID -> '||t_array_col(l_idx).UNIT_ID||' '||
+                                            'PERIOD_DURATION -> '||TO_CHAR(T_ARRAY_COL(L_IDX).PERIOD_DURATION)||' '||
+                                            'COMP_AVERAGE_LOAD -> '||TO_CHAR(T_ARRAY_COL(L_IDX).COMP_AVERAGE_LOAD)||' '||
+                                            'COMP_PEAK_LOAD_PERCENT -> '||TO_CHAR(T_ARRAY_COL(L_IDX).COMP_PEAK_LOAD_PERCENT)||' '||
+                                            'COMP_PEAK_LOAD_DATE -> '||TO_CHAR(T_ARRAY_COL(L_IDX).COMP_PEAK_LOAD_DATE)||' '||
+                                            'COMP_PEAK_LOAD_TIME -> '||TO_CHAR(T_ARRAY_COL(L_IDX).COMP_PEAK_LOAD_TIME)||' '||
+                                            'COMP_INVALID_RECORD -> '||TO_CHAR(T_ARRAY_COL(L_IDX).COMP_INVALID_RECORD));
         end loop;
     -- end --
     END;
@@ -472,7 +671,19 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     TYPE T_ARRAY_TAB IS TABLE OF PCOFNS_PS_NEUM_FLEXINS_RAW%ROWTYPE;
     t_array_col t_array_tab;
   BEGIN
-    sql_stmt := 'SELECT T1.*
+    sql_stmt := 'SELECT T1.FINS_ID,
+                        T1.PERIOD_START_TIME,
+                        T1.PERIOD_DURATION,
+                        T1.NS_ATTACHED_USERS_MAX,
+                        T1.NS_ATTACHED_USERS_SUM,
+                        T1.NS_ATTACHED_USERS_DEN,
+                        T1.NS_ROAMING_USERS_MAX,
+                        T1.NS_ROAMING_USERS_SUM,
+                        T1.NS_ROAMING_USERS_DEN,
+                        T1.NS_DETACHED_USERS_MAX,
+                        T1.NS_DETACHED_USERS_SUM,
+                        T1.NS_DETACHED_USERS_DEN,
+                        T1.NS_PURGE_ATTEMPT
                  FROM ' || p_source|| ' T1
                  LEFT OUTER JOIN ' || p_target || ' T3
                    ON T1.FINS_ID = T3.FINS_ID
@@ -500,14 +711,19 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
                                             L_ERRNO,
                                             L_MSG,
                                             'FINS_ID -> '||TO_CHAR(T_ARRAY_COL(L_IDX).FINS_ID)||' '||
-                                            'PERIOD_START_TIME -> '||T_ARRAY_COL(L_IDX).PERIOD_START_TIME);
+                                            'PERIOD_START_TIME -> '||T_ARRAY_COL(L_IDX).PERIOD_START_TIME||' '||
+                                            'PERIOD_DURATION -> '||TO_CHAR(T_ARRAY_COL(L_IDX).PERIOD_DURATION)||' '||
+                                            'NS_ATTACHED_USERS_MAX -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ATTACHED_USERS_MAX)||' '||
+                                            'NS_ATTACHED_USERS_SUM -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ATTACHED_USERS_SUM)||' '||
+                                            'NS_ATTACHED_USERS_DEN -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ATTACHED_USERS_DEN)||' '||
+                                            'NS_ROAMING_USERS_MAX -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ROAMING_USERS_MAX)||' '||
+                                            'NS_ROAMING_USERS_SUM -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ROAMING_USERS_SUM)||' '||
+                                            'NS_ROAMING_USERS_DEN -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_ROAMING_USERS_DEN)||' '||
+                                            'NS_DETACHED_USERS_MAX -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_DETACHED_USERS_MAX)||' '||
+                                            'NS_DETACHED_USERS_SUM -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_DETACHED_USERS_SUM)||' '||
+                                            'NS_DETACHED_USERS_DEN -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_DETACHED_USERS_DEN)||' '||
+                                            'NS_PURGE_ATTEMPT -> '||TO_CHAR(T_ARRAY_COL(L_IDX).NS_PURGE_ATTEMPT));
 
-              /*INSERT INTO ERROR_LOG(ID, IMPORT_DATE, SOURCE, TARGET,FINS_ID, PERIOD_START_TIME
-              ,ERROR_NRO,ERROR_MESG)
-              VALUES
-              (seq_error_log.NEXTVAL,sysdate,p_source1_table,p_target_table,
-               t_array_col(l_idx).FINS_ID,t_array_col(l_idx).PERIOD_START_TIME,
-              l_errno,l_msg);*/
           end loop;
           -- end --
     END;
@@ -755,7 +971,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     OPEN RESULT_SET FOR
       SELECT  FECHA,FINS_ID ,flns_value as flns_3110l
               ,B.name mme_name
-      FROM TABLE(pkg_lte_core.F_TPS) aa,
+      FROM TABLE(F_TPS) aa,
             (SELECT INT_ID,
                     NAME
             FROM MULTIVENDOR_OBJECTS
@@ -992,22 +1208,14 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
   --
   FUNCTION F_LTE_CORE_TPS_DAY (P_FINI VARCHAR2,P_FFIN VARCHAR2 DEFAULT NULL) RETURN FLNS_TAB PIPELINED AS
   BEGIN
-    FOR i IN (SELECT  FECHA,
-                      SUM(FLNS_VALUE) FLNS_DAY
-              FROM (
-                    select  to_char(fecha,'dd.mm.yyyy') fecha,FINS_ID,
-                                          flns_value
-                    from table(F_LTE_CORE_TPS_HOUR(P_FINI,P_FFIN)) aa,
-                        (SELECT INT_ID,
-                                NAME
-                        FROM MULTIVENDOR_OBJECTS
-                        WHERE element_type ='FLEXINS'
-                        AND OBJECT_CLASS IN (889,3766)) B
-                    WHERE aa.FINS_ID = B.INT_ID)
-              GROUP BY FECHA
+    FOR i IN (select  to_char(fecha,'dd.mm.yyyy') fecha,
+                      FINS_ID,
+                      SUM(flns_value) FLNS_DAY
+              from table(F_LTE_CORE_TPS_HOUR(P_FINI,P_FFIN))
+              GROUP BY to_char(fecha,'dd.mm.yyyy'),FINS_ID
               ) LOOP
       
-      PIPE ROW (FLNS_OBJ(i.FECHA,NULL,i.FLNS_DAY));
+      PIPE ROW (FLNS_OBJ(i.FECHA,i.FINS_ID,i.FLNS_DAY));
     END LOOP;
     RETURN;
     exception
@@ -1023,7 +1231,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
     OPEN RESULT_SET FOR
       SELECT  FECHA,FINS_ID ,flns_value as flns_3110l
               ,B.name mme_name
-      FROM TABLE(pkg_lte_core.F_LTE_CORE_TPS_HOUR(P_FINI,P_FFIN)) aa,
+      FROM TABLE(F_LTE_CORE_TPS_HOUR(P_FINI,P_FFIN)) aa,
             (SELECT INT_ID,
                     NAME
             FROM MULTIVENDOR_OBJECTS
@@ -1035,5 +1243,5 @@ CREATE OR REPLACE PACKAGE BODY PKG_LTE_CORE AS
         
   END P_TPS2;
   
-END PKG_LTE_CORE;
+END G_LTE_CORE;
 /
